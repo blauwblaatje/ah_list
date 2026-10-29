@@ -83,3 +83,7 @@ python3 -m venv .venv
 
 Tests mock every AH call. `spike/` holds the script used to check the API live and
 `spike/FINDINGS.md` what it found.
+
+## License
+
+Apache License 2.0, see [LICENSE](LICENSE).
