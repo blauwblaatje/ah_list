@@ -6,8 +6,16 @@ bonus flags are made up.
 
 from __future__ import annotations
 
+import pytest
+
 from custom_components.ah_list.api import Product
-from custom_components.ah_list.matcher import choose, normalize, product_name
+from custom_components.ah_list.matcher import (
+    choose,
+    fits,
+    normalize,
+    parse_alternative,
+    product_name,
+)
 
 from .conftest import search_result
 
@@ -127,3 +135,61 @@ def test_unavailable_skipped() -> None:
     product, reason, candidates = choose("uien", results)
     assert (product, reason) == (None, "ambiguous")
     assert [p.id for p in candidates] == [2]
+
+
+@pytest.mark.parametrize(
+    ("term", "title", "expected"),
+    [
+        # Compounds may be split or joined, both ways.
+        ("spek reepjes", "AH Spekreepjes gerookt", True),
+        ("spekreepjes", "AH Spek reepjes gerookt", True),
+        ("biologische spek reepjes", "AH Biologisch Spekreepjes gerookt", True),
+        # Simple endings don't matter.
+        ("biologische spekreepjes", "AH Biologisch Spekreepjes gerookt", True),
+        ("eieren", "AH Biologisch Eieren S M L", True),
+        # Whole words only.
+        ("eieren", "AH Nederlandse aardbeien", False),
+        ("melk", "AH Opschuimmelk", False),
+        # A following word can make it another product.
+        ("ei", "Johma Ei salade", False),
+        ("aardbei", "Melkunie Breaker aardbei yoghurt", False),
+        ("ei", "AH Witte vrije uitloop ei M", True),
+    ],
+)
+def test_fits(term: str, title: str, expected: bool) -> None:
+    """Words are compared the Dutch way."""
+    assert fits(term, title) is expected
+
+
+def test_bought_salad_is_not_eggs() -> None:
+    """The one bought product with "ei" in it is a salad, so no match."""
+    results = products(
+        search_result(1, "Johma Ei salade", "Johma", bought=True),
+        search_result(2, "AH Aardappel vrije-uitloop ei 3-pack", "AH"),
+    )
+    product, reason, _ = choose("ei", results)
+    assert (product, reason) == (None, "ambiguous")
+
+
+def test_compound_exact_name() -> None:
+    """An exact name is exact whatever the spaces."""
+    results = products(
+        search_result(1, "AH Spekreepjes", "AH"),
+        search_result(2, "AH Spekreepjes gerookt", "AH"),
+    )
+    product, reason, _ = choose("spek reepjes", results)
+    assert (product.id, reason) == (1, "exact_name")
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("{'name': 'middelgrote scharreleieren'}", "middelgrote scharreleieren"),
+        ("  eieren ", "eieren"),
+        ("{not a dict", "{not a dict"),
+        ("{'other': 1}", "{'other': 1}"),
+    ],
+)
+def test_parse_alternative(text: str, expected: str) -> None:
+    """Mealie aliases come as stringified dicts; plain text passes through."""
+    assert parse_alternative(text) == expected

@@ -71,6 +71,24 @@
     }
   },
   "services": {
+    "add_item": {
+      "name": "Item aan AH-lijst toevoegen",
+      "description": "Voegt een item toe, gekoppeld aan een AH-product als dat duidelijk is. Vindt het item geen product, dan worden de alternatieven op volgorde geprobeerd, bijv. het meervoud en de aliassen van een Mealie-ingrediënt.",
+      "fields": {
+        "item": {
+          "name": "Item",
+          "description": "Wat erbij moet, bijv. \"2 pakken melk\"; het aantal komt hiervandaan."
+        },
+        "alternatives": {
+          "name": "Alternatieven",
+          "description": "Andere namen om een product mee te zoeken. Mealie-aliassen zoals mealie.get_shopping_list_items ze geeft werken direct."
+        },
+        "config_entry_id": {
+          "name": "AH-account",
+          "description": "Het Albert Heijn-account; alleen nodig bij meer dan één."
+        }
+      }
+    },
     "search_products": {
       "name": "AH-producten zoeken",
       "description": "Zoekt AH-producten en laat zien welke de matcher zou kiezen, om een product-id voor een koppeling te vinden.",

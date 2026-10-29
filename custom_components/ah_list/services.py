@@ -25,9 +25,20 @@ ATTR_QUERY = "query"
 ATTR_TERM = "term"
 ATTR_PRODUCT_ID = "product_id"
 ATTR_TITLE = "title"
+ATTR_ITEM = "item"
+ATTR_ALTERNATIVES = "alternatives"
 
 _ENTRY = {vol.Optional(ATTR_CONFIG_ENTRY_ID): cv.string}
 
+ADD_ITEM_SCHEMA = vol.Schema(
+    {
+        **_ENTRY,
+        vol.Required(ATTR_ITEM): cv.string,
+        vol.Optional(ATTR_ALTERNATIVES, default=[]): vol.All(
+            cv.ensure_list, [cv.string]
+        ),
+    }
+)
 SEARCH_SCHEMA = vol.Schema({**_ENTRY, vol.Required(ATTR_QUERY): cv.string})
 SET_MAPPING_SCHEMA = vol.Schema(
     {
@@ -55,6 +66,14 @@ def _coordinator(hass: HomeAssistant, call: ServiceCall) -> AhListCoordinator:
             translation_key="no_entry" if not entries else "choose_entry",
         )
     return entries[0].runtime_data
+
+
+async def _add_item(call: ServiceCall) -> ServiceResponse:
+    coordinator = _coordinator(call.hass, call)
+    [match] = await coordinator.async_add_items(
+        [(call.data[ATTR_ITEM], call.data[ATTR_ALTERNATIVES])]
+    )
+    return match.as_dict()
 
 
 async def _search(call: ServiceCall) -> ServiceResponse:
@@ -109,6 +128,13 @@ async def _get_mappings(call: ServiceCall) -> ServiceResponse:
 
 def async_setup_services(hass: HomeAssistant) -> None:
     """Register the actions."""
+    hass.services.async_register(
+        DOMAIN,
+        "add_item",
+        _add_item,
+        schema=ADD_ITEM_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
     hass.services.async_register(
         DOMAIN,
         "search_products",

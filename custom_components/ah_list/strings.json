@@ -71,6 +71,24 @@
     }
   },
   "services": {
+    "add_item": {
+      "name": "Add item to AH list",
+      "description": "Adds an item, matched to an AH product where clear. When the item finds no product, the alternatives are tried in order, e.g. a Mealie food's plural and aliases.",
+      "fields": {
+        "item": {
+          "name": "Item",
+          "description": "What to add, e.g. \"2 pakken melk\"; the quantity comes from here."
+        },
+        "alternatives": {
+          "name": "Alternatives",
+          "description": "Other names to try for a product. Mealie aliases as returned by mealie.get_shopping_list_items work as they are."
+        },
+        "config_entry_id": {
+          "name": "AH account",
+          "description": "The Albert Heijn account to use; only needed with more than one."
+        }
+      }
+    },
     "search_products": {
       "name": "Search AH products",
       "description": "Searches AH products and shows which one the matcher would pick, to find a product id for a mapping.",

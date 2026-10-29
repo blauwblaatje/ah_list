@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 import logging
 from typing import Any, NoReturn
 
@@ -38,17 +39,19 @@ class AhListCoordinator(DataUpdateCoordinator[list[ListItem]]):
         self.client = client
         self.matcher = Matcher(hass, entry.entry_id, client)
 
-    async def async_add_items(self, texts: list[str]) -> list[Match]:
-        """Match items to products and add them to the AH list in one write.
+    async def async_add_items(
+        self, items: list[tuple[str, Sequence[str]]]
+    ) -> list[Match]:
+        """Match (text, alternatives) to products and add them in one write.
 
         AH sets a product's quantity rather than adding to it, so a product
         already on the list gets the new quantity on top; a checked-off one
         starts again from the new quantity.
         """
         matches = []
-        for text in texts:
+        for text, alternatives in items:
             try:
-                matches.append(await self.matcher.async_match(text))
+                matches.append(await self.matcher.async_match(text, alternatives))
             except AhAuthError as err:
                 self.auth_failed(err)
         quantities = {

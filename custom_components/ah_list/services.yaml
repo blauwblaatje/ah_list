@@ -1,3 +1,20 @@
+add_item:
+  fields:
+    item:
+      required: true
+      example: "2 stuk ei"
+      selector:
+        text:
+    alternatives:
+      example: '["eieren", "middelgrote scharreleieren"]'
+      selector:
+        text:
+          multiple: true
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: ah_list
+
 search_products:
   fields:
     query:
