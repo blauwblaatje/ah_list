@@ -119,6 +119,7 @@ async def test_diagnostics_redacts_tokens(
 
     assert diag["entry"]["data"][CONF_TOKENS] == "**REDACTED**"
     assert diag["items"] == {"total": 2, "products": 1, "free_text": 1, "checked": 1}
+    assert diag["mappings"] == 0
     assert "access" not in str(diag)
 
 

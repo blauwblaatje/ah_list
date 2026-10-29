@@ -7,12 +7,14 @@ import time
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
+from yarl import URL
 
 from custom_components.ah_list.api import (
     BASE_URL,
     GRAPHQL_PATH,
     LIST_PATH,
     REFRESH_PATH,
+    SEARCH_PATH,
     TOKEN_PATH,
 )
 from custom_components.ah_list.const import CONF_TOKENS, DOMAIN
@@ -102,3 +104,34 @@ def mock_refresh(aioclient_mock: AiohttpClientMocker, **kwargs) -> None:
     """Mock the token refresh."""
     kwargs.setdefault("json", TOKEN_RESPONSE)
     aioclient_mock.post(BASE_URL + REFRESH_PATH, **kwargs)
+
+
+def search_result(
+    product_id: int,
+    title: str,
+    brand: str,
+    *,
+    bought: bool = False,
+    bonus: bool = False,
+    status: str = "IN_ASSORTMENT",
+) -> dict:
+    """Return a product as the search endpoint does (real titles, made-up flags)."""
+    return {
+        "webshopId": product_id,
+        "title": title,
+        "brand": brand,
+        "salesUnitSize": "1 l",
+        "priceBeforeBonus": 1.29,
+        "currentPrice": None,
+        "isBonus": bonus,
+        "isPreviouslyBought": bought,
+        "orderAvailabilityStatus": status,
+    }
+
+
+def mock_search(
+    aioclient_mock: AiohttpClientMocker, query: str, products: list[dict], **kwargs
+) -> None:
+    """Mock the product search for one query."""
+    kwargs.setdefault("json", {"products": products})
+    aioclient_mock.get(URL(BASE_URL + SEARCH_PATH).with_query(query=query), **kwargs)

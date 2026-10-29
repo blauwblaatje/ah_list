@@ -39,7 +39,14 @@
 - The PATCH response is the whole list in the same shape as GET, so no GET is needed after
   a write.
 
+## Search quality (18 terms, 2026-10-29)
+- Relevance puts bonus multi-packs ("3-pack") first and returns loose hits: "eieren" finds
+  "aardbeien", "brood" a surimi salad, "wc papier" envelopes.
+- `size=30` is accepted (returned 32). Previously bought products are often beyond the
+  first 10 ("melk": positions 8, 10, 11, 22).
+- `brand` is a prefix of `title`, including sub-brands ("AH Biologisch", "AH Terra").
+
 ## Still to check
 - Whether the refresh token rotates (store whatever comes back, either way).
-- Size of `size` that search accepts; the response of a bad/expired token (401?).
+- The response of a bad/expired token (401?).
 - What happens when the app and a PATCH change the list at the same moment.

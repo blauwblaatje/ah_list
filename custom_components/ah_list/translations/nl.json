@@ -53,6 +53,83 @@
     },
     "product_rename": {
       "message": "Een product op de AH-lijst kan geen andere naam krijgen; alleen het aantal (\"2 × …\") kan veranderen. Verwijder het en voeg een nieuw item toe."
+    },
+    "search_failed": {
+      "message": "Kon AH-producten niet zoeken: {error}"
+    },
+    "no_entry": {
+      "message": "Er is geen Albert Heijn-account ingesteld en geladen."
+    },
+    "choose_entry": {
+      "message": "Er is meer dan één Albert Heijn-account ingesteld: kies er een."
+    },
+    "empty_term": {
+      "message": "De term is leeg zonder het aantal."
+    },
+    "no_mapping": {
+      "message": "Er is geen koppeling voor \"{term}\"."
+    }
+  },
+  "services": {
+    "search_products": {
+      "name": "AH-producten zoeken",
+      "description": "Zoekt AH-producten en laat zien welke de matcher zou kiezen, om een product-id voor een koppeling te vinden.",
+      "fields": {
+        "query": {
+          "name": "Zoekterm",
+          "description": "Wat je op de lijst zou zetten, bijv. \"2 pakken melk\"."
+        },
+        "config_entry_id": {
+          "name": "AH-account",
+          "description": "Het Albert Heijn-account; alleen nodig bij meer dan één."
+        }
+      }
+    },
+    "set_mapping": {
+      "name": "Productkoppeling instellen",
+      "description": "Gebruik voor een term altijd dit AH-product, bijv. \"melk\".",
+      "fields": {
+        "term": {
+          "name": "Term",
+          "description": "De tekst zoals je die op de lijst zet; aantallen worden genegeerd."
+        },
+        "product_id": {
+          "name": "Product-id",
+          "description": "Het AH-product-id, uit AH-producten zoeken."
+        },
+        "title": {
+          "name": "Titel",
+          "description": "Productnaam om te tonen; optioneel."
+        },
+        "config_entry_id": {
+          "name": "AH-account",
+          "description": "Het Albert Heijn-account; alleen nodig bij meer dan één."
+        }
+      }
+    },
+    "remove_mapping": {
+      "name": "Productkoppeling verwijderen",
+      "description": "Gebruik voor een term geen vast product meer; hij wordt weer gematcht.",
+      "fields": {
+        "term": {
+          "name": "Term",
+          "description": "De term waarvan de koppeling weg moet."
+        },
+        "config_entry_id": {
+          "name": "AH-account",
+          "description": "Het Albert Heijn-account; alleen nodig bij meer dan één."
+        }
+      }
+    },
+    "get_mappings": {
+      "name": "Productkoppelingen ophalen",
+      "description": "Geeft alle koppelingen term → product.",
+      "fields": {
+        "config_entry_id": {
+          "name": "AH-account",
+          "description": "Het Albert Heijn-account; alleen nodig bij meer dan één."
+        }
+      }
     }
   }
 }

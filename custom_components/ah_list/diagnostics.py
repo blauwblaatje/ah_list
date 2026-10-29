@@ -26,4 +26,5 @@ async def async_get_config_entry_diagnostics(
             "free_text": sum(item.product_id is None for item in items),
             "checked": sum(item.checked for item in items),
         },
+        "mappings": len(coordinator.matcher.mappings),
     }

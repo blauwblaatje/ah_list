@@ -1,0 +1,54 @@
+search_products:
+  fields:
+    query:
+      required: true
+      example: "2 pakken halfvolle melk"
+      selector:
+        text:
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: ah_list
+
+set_mapping:
+  fields:
+    term:
+      required: true
+      example: "melk"
+      selector:
+        text:
+    product_id:
+      required: true
+      example: 1525
+      selector:
+        number:
+          min: 1
+          max: 99999999
+          mode: box
+    title:
+      example: "AH Halfvolle melk"
+      selector:
+        text:
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: ah_list
+
+remove_mapping:
+  fields:
+    term:
+      required: true
+      example: "melk"
+      selector:
+        text:
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: ah_list
+
+get_mappings:
+  fields:
+    config_entry_id:
+      selector:
+        config_entry:
+          integration: ah_list

@@ -88,11 +88,8 @@ class AhTodoListEntity(CoordinatorEntity[AhListCoordinator], TodoListEntity):
         )
 
     async def async_create_todo_item(self, item: TodoItem) -> None:
-        """Add a free-text item; product matching comes later."""
-        checked = item.status == TodoItemStatus.COMPLETED
-        await self.coordinator.async_patch(
-            [text_entry(item.summary.strip(), checked=checked)]
-        )
+        """Add an item as a matched product or as free text."""
+        await self.coordinator.async_add_items([item.summary or ""])
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Check off, change the quantity of, or rename an item."""

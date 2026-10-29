@@ -9,13 +9,20 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
-from custom_components.ah_list.api import BASE_URL, LIST_PATH
+from custom_components.ah_list.api import BASE_URL, LIST_PATH, SEARCH_PATH
+from custom_components.ah_list.const import DOMAIN
 from homeassistant.components.todo import DOMAIN as TODO_DOMAIN
 from homeassistant.config_entries import SOURCE_REAUTH
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
-from .conftest import LIST_RESPONSE, mock_list, mock_refresh
+from .conftest import (
+    LIST_RESPONSE,
+    mock_list,
+    mock_refresh,
+    mock_search,
+    search_result,
+)
 
 ENTITY_ID = "todo.ah_lijst"
 MILK = "prd:441199"
@@ -30,6 +37,7 @@ async def setup(
 ) -> None:
     """Set up the integration with the standard list."""
     mock_list(aioclient_mock)
+    mock_search(aioclient_mock, "brood", [])
     config_entry.add_to_hass(hass)
     await hass.config_entries.async_setup(config_entry.entry_id)
     await hass.async_block_till_done()
@@ -60,16 +68,16 @@ async def call(hass: HomeAssistant, service: str, **data: Any) -> None:
 
 
 @pytest.mark.usefixtures("setup")
-async def test_add_item(
+async def test_add_free_text(
     hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
 ) -> None:
-    """A new item goes to AH as free text and the response is shown."""
+    """An item without a clear product goes to AH as its whole text."""
     mock_patch(aioclient_mock)
-    await call(hass, "add_item", item=" brood ")
+    await call(hass, "add_item", item=" 2 pakken brood ")
 
     assert patch_body(aioclient_mock) == [
         {
-            "description": "brood",
+            "description": "2 pakken brood",
             "quantity": 1,
             "type": "SHOPPABLE",
             "originCode": "TXT",
@@ -77,6 +85,77 @@ async def test_add_item(
         }
     ]
     assert hass.states.get(ENTITY_ID).state == "2"
+
+
+@pytest.mark.usefixtures("setup")
+async def test_add_matched_product(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A clear match goes to AH as the product with the parsed quantity."""
+    mock_search(
+        aioclient_mock,
+        "uien",
+        [search_result(4164, "AH Gele uien", "AH", bought=True)],
+    )
+    mock_patch(aioclient_mock)
+    await call(hass, "add_item", item="3 netten uien")
+
+    [entry] = patch_body(aioclient_mock)
+    assert (entry["productId"], entry["quantity"], entry["originCode"]) == (
+        4164,
+        3,
+        "PRD",
+    )
+    assert entry["description"] == "AH Gele uien"
+
+
+@pytest.mark.usefixtures("setup")
+async def test_add_to_product_on_list(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """Adding a product already on the list adds to its quantity."""
+    mock_search(
+        aioclient_mock,
+        "halfvolle melk",
+        [search_result(441199, "Campina Halfvolle melk", "Campina", bought=True)],
+    )
+    mock_patch(aioclient_mock)
+    await call(hass, "add_item", item="halfvolle melk")
+
+    [entry] = patch_body(aioclient_mock)
+    assert (entry["productId"], entry["quantity"]) == (441199, 3)
+
+
+@pytest.mark.usefixtures("setup")
+async def test_add_with_mapping(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A mapped term is added without searching."""
+    await hass.services.async_call(
+        DOMAIN,
+        "set_mapping",
+        {"term": "Melk", "product_id": 1525, "title": "AH Halfvolle melk"},
+        blocking=True,
+    )
+    mock_patch(aioclient_mock)
+    await call(hass, "add_item", item="2 pakken melk")
+
+    assert not [c for c in aioclient_mock.mock_calls if c[1].path == SEARCH_PATH]
+    [entry] = patch_body(aioclient_mock)
+    assert (entry["productId"], entry["quantity"]) == (1525, 2)
+
+
+@pytest.mark.usefixtures("setup")
+async def test_add_when_search_fails(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """A failing search still adds the item, as text."""
+    mock_search(aioclient_mock, "kaas", [], status=500)
+    mock_patch(aioclient_mock)
+    await call(hass, "add_item", item="kaas")
+
+    [entry] = patch_body(aioclient_mock)
+    assert (entry["description"], entry["originCode"]) == ("kaas", "TXT")
 
 
 @pytest.mark.usefixtures("setup")

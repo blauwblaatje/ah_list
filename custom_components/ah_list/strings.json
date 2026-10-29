@@ -53,6 +53,83 @@
     },
     "product_rename": {
       "message": "A product on the AH list can't be renamed; only its quantity (\"2 × …\") can change. Remove it and add a new item instead."
+    },
+    "search_failed": {
+      "message": "Could not search AH products: {error}"
+    },
+    "no_entry": {
+      "message": "No Albert Heijn account is set up and loaded."
+    },
+    "choose_entry": {
+      "message": "More than one Albert Heijn account is set up: choose one."
+    },
+    "empty_term": {
+      "message": "The term is empty once the quantity is removed."
+    },
+    "no_mapping": {
+      "message": "There is no mapping for \"{term}\"."
+    }
+  },
+  "services": {
+    "search_products": {
+      "name": "Search AH products",
+      "description": "Searches AH products and shows which one the matcher would pick, to find a product id for a mapping.",
+      "fields": {
+        "query": {
+          "name": "Query",
+          "description": "What you would put on the list, e.g. \"2 pakken melk\"."
+        },
+        "config_entry_id": {
+          "name": "AH account",
+          "description": "The Albert Heijn account to use; only needed with more than one."
+        }
+      }
+    },
+    "set_mapping": {
+      "name": "Set product mapping",
+      "description": "Always use this AH product for a term, e.g. \"melk\".",
+      "fields": {
+        "term": {
+          "name": "Term",
+          "description": "The text as you put it on the list; quantities are ignored."
+        },
+        "product_id": {
+          "name": "Product id",
+          "description": "The AH product id, from Search AH products."
+        },
+        "title": {
+          "name": "Title",
+          "description": "Product name to show; optional."
+        },
+        "config_entry_id": {
+          "name": "AH account",
+          "description": "The Albert Heijn account to use; only needed with more than one."
+        }
+      }
+    },
+    "remove_mapping": {
+      "name": "Remove product mapping",
+      "description": "Stop using a fixed product for a term; it is matched again.",
+      "fields": {
+        "term": {
+          "name": "Term",
+          "description": "The term to remove the mapping for."
+        },
+        "config_entry_id": {
+          "name": "AH account",
+          "description": "The Albert Heijn account to use; only needed with more than one."
+        }
+      }
+    },
+    "get_mappings": {
+      "name": "Get product mappings",
+      "description": "Returns all term → product mappings.",
+      "fields": {
+        "config_entry_id": {
+          "name": "AH account",
+          "description": "The Albert Heijn account to use; only needed with more than one."
+        }
+      }
     }
   }
 }

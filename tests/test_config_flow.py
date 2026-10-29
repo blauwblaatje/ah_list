@@ -8,6 +8,7 @@ from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClien
 from custom_components.ah_list.api import BASE_URL, TOKEN_PATH
 from custom_components.ah_list.const import CONF_REDIRECT_URL, CONF_TOKENS, DOMAIN
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
 
@@ -118,6 +119,9 @@ async def test_reauth(
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reauth_successful"
     assert config_entry.data[CONF_TOKENS]["refresh_token"] == "new-refresh"
+    # The entry reloads with the new tokens.
+    await hass.async_block_till_done()
+    assert config_entry.state is ConfigEntryState.LOADED
 
 
 async def test_reauth_wrong_account(

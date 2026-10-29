@@ -4,13 +4,24 @@ from __future__ import annotations
 
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.typing import ConfigType
 
 from .api import AhClient, Tokens
-from .const import CONF_TOKENS
+from .const import CONF_TOKENS, DOMAIN
 from .coordinator import AhListConfigEntry, AhListCoordinator
+from .services import async_setup_services
 
 PLATFORMS = [Platform.TODO]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Register the actions."""
+    async_setup_services(hass)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: AhListConfigEntry) -> bool:
@@ -25,6 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: AhListConfigEntry) -> bo
         async_get_clientsession(hass), Tokens(**entry.data[CONF_TOKENS]), save_tokens
     )
     coordinator = AhListCoordinator(hass, entry, client)
+    await coordinator.matcher.async_load()
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

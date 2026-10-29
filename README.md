@@ -3,12 +3,30 @@
 Shows your Albert Heijn shopping list ("mijn lijst" in the AH app) as a Home Assistant
 to-do list, **AH lijst** (`todo.ah_lijst`), and lets you change it from Home Assistant:
 
-- **Add** an item: it goes to AH as free text for now.
+- **Add** an item, e.g. "2 pakken melk" or via Assist. It is matched to an AH product when
+  that is clear (see below); otherwise it goes on the list as text, which works fine in the
+  store. Adding a product that is already on the list adds to its quantity.
 - **Check off** and uncheck items.
 - **Change the quantity** of a product by editing the number in front: `2 × AH Halfvolle melk`.
   AH keeps free-text items at quantity 1.
 - **Rename** a free-text item. Products can't be renamed; remove them and add a new item.
 - **Remove** items.
+
+## Matching items to products
+
+The text is split into a quantity and a name: "2 pakken melk", "melk x2" and "twee pakken
+melk" buy two; "500 g gehakt" and "2 teentjes knoflook" buy one. The name is searched at
+AH, and a product is only chosen when it clearly fits:
+
+1. you set a mapping for the term (`ah_list.set_mapping`);
+2. all products you bought before that contain every word have the same name, in whatever
+   size or brand ("melk" → AH Halfvolle melk);
+3. a product is named exactly like the term ("rucola" → AH Rucola). If you bought several
+   different matching products, only those count.
+
+Otherwise the item stays text. Use `ah_list.search_products` to find a product id and
+`ah_list.set_mapping` to fix a term to it; `ah_list.get_mappings` and
+`ah_list.remove_mapping` manage the mappings.
 
 Planned: adding items from other to-do lists (the HA shopping list, Mealie, Assist) with
 matching to AH products. See [the plan](#roadmap).
@@ -50,7 +68,7 @@ The login stays valid; when AH revokes it, Home Assistant asks you to log in aga
 
 1. ✅ Read-only AH list
 2. ✅ Add, remove and check off items on the AH list
-3. Match free text ("2 pakken melk") to AH products, preferring products you bought before
+3. ✅ Match free text ("2 pakken melk") to AH products, preferring products you bought before
 4. `ah_list.sync_from_todo` action and an inbox blueprint
 5. A list of matches to review, "AH te controleren"
 
