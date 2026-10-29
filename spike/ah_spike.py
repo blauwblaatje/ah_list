@@ -16,9 +16,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+from pathlib import Path
 import sys
 import time
-from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import aiohttp
@@ -60,7 +60,9 @@ def parse_code(value: str) -> str:
 def dump(name: str, status: int, payload: object) -> None:
     OUT_DIR.mkdir(exist_ok=True)
     path = OUT_DIR / f"{time.strftime('%H%M%S')}-{name}.json"
-    path.write_text(json.dumps({"status": status, "body": payload}, indent=2, ensure_ascii=False))
+    path.write_text(
+        json.dumps({"status": status, "body": payload}, indent=2, ensure_ascii=False)
+    )
     print(f"  [{status}] raw response -> {path.name}")
 
 
@@ -74,7 +76,11 @@ def save_tokens(payload: dict) -> None:
     TOKEN_PATH.touch(mode=0o600)
     TOKEN_PATH.write_text(
         json.dumps(
-            {"access_token": access, "refresh_token": refresh, "expires_at": time.time() + expires_in}
+            {
+                "access_token": access,
+                "refresh_token": refresh,
+                "expires_at": time.time() + expires_in,
+            }
         )
     )
     print(f"  token keys: {sorted(payload)}; expires_in={expires_in}s")
@@ -88,7 +94,9 @@ async def read_body(resp: aiohttp.ClientResponse) -> object:
         return text
 
 
-async def auth_post(session: aiohttp.ClientSession, path: str, body: dict, name: str) -> dict:
+async def auth_post(
+    session: aiohttp.ClientSession, path: str, body: dict, name: str
+) -> dict:
     async with session.post(BASE_URL + path, json=body, headers=HEADERS) as resp:
         payload = await read_body(resp)
         # Token bodies are not dumped: they hold secrets.
@@ -119,7 +127,9 @@ async def api(
     session: aiohttp.ClientSession, method: str, path: str, name: str, **kwargs
 ) -> object:
     headers = {**HEADERS, "Authorization": f"Bearer {await access_token(session)}"}
-    async with session.request(method, BASE_URL + path, headers=headers, **kwargs) as resp:
+    async with session.request(
+        method, BASE_URL + path, headers=headers, **kwargs
+    ) as resp:
         payload = await read_body(resp)
         dump(name, resp.status, payload)
         if resp.status >= 400:
@@ -142,7 +152,9 @@ def describe(item: dict) -> str:
 async def get_list(session: aiohttp.ClientSession, name: str = "list") -> list[dict]:
     payload = await api(session, "GET", LIST_PATH, name)
     items = (payload.get("items") if isinstance(payload, dict) else None) or []
-    print(f"  {len(items)} items; top-level keys: {sorted(payload) if isinstance(payload, dict) else '-'}")
+    print(
+        f"  {len(items)} items; top-level keys: {sorted(payload) if isinstance(payload, dict) else '-'}"
+    )
     for item in items:
         print("   ", describe(item))
     return items
@@ -204,9 +216,13 @@ async def roundtrip(session: aiohttp.ClientSession, query: str, text: str) -> No
     pid, title = int(product["webshopId"]), product["title"]
     # Removal is by product/description, so it would also remove a real item.
     for item in before:
-        listed = ((item.get("productDetails") or {}).get("product") or {}).get("webshopId")
+        listed = ((item.get("productDetails") or {}).get("product") or {}).get(
+            "webshopId"
+        )
         if listed == pid or item.get("description") == text:
-            raise SystemExit(f"{describe(item)} is already on the list; pick another query/text")
+            raise SystemExit(
+                f"{describe(item)} is already on the list; pick another query/text"
+            )
 
     print(f"== add product {pid} ({title}) and free text {text!r}")
     await patch(session, [product_entry(pid, query, 1), text_entry(text, 1)], "add")
@@ -218,7 +234,11 @@ async def roundtrip(session: aiohttp.ClientSession, query: str, text: str) -> No
     await patch(session, [product_entry(pid, query, 0), text_entry(text, 0)], "remove")
     print("== list after remove")
     final = await get_list(session, "list-after-remove")
-    print("  back to start" if len(final) == len(before) else "  ITEM COUNT DIFFERS FROM START")
+    print(
+        "  back to start"
+        if len(final) == len(before)
+        else "  ITEM COUNT DIFFERS FROM START"
+    )
 
 
 async def main(args: list[str]) -> None:

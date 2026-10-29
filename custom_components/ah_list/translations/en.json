@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Log in at Albert Heijn",
+        "description": "1. Open [the AH login page]({login_url}) in a desktop browser and open the developer tools (F12) on the **Console** tab.\n2. Log in. The last page will not load: it redirects to the AH app.\n3. Copy the line `Failed to launch 'appie://login-exit?code=…'` from the console (Firefox: copy the `appie://` address) and paste it below. The code is only valid for a few minutes.",
+        "data": {
+          "redirect_url": "Redirect URL or code"
+        },
+        "data_description": {
+          "redirect_url": "The whole line or URL is fine; only the code is used."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Log in at Albert Heijn again",
+        "description": "The AH login has expired.\n\n1. Open [the AH login page]({login_url}) in a desktop browser and open the developer tools (F12) on the **Console** tab.\n2. Log in. The last page will not load: it redirects to the AH app.\n3. Copy the line `Failed to launch 'appie://login-exit?code=…'` from the console (Firefox: copy the `appie://` address) and paste it below.",
+        "data": {
+          "redirect_url": "Redirect URL or code"
+        },
+        "data_description": {
+          "redirect_url": "The whole line or URL is fine; only the code is used."
+        }
+      }
+    },
+    "error": {
+      "invalid_code": "No login code found in what you pasted.",
+      "invalid_auth": "AH rejected the code. Codes expire after a few minutes and work only once: log in again for a fresh one.",
+      "cannot_connect": "Could not reach Albert Heijn.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This AH account is already set up.",
+      "reauth_successful": "Logged in again.",
+      "wrong_account": "You logged in with a different AH account than the one set up."
+    }
+  },
+  "entity": {
+    "todo": {
+      "shopping_list": {
+        "name": "AH lijst"
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Inloggen bij Albert Heijn",
+        "description": "1. Open [de AH-inlogpagina]({login_url}) in een browser op de computer en open de ontwikkelaarstools (F12) op het tabblad **Console**.\n2. Log in. De laatste pagina laadt niet: die stuurt door naar de AH-app.\n3. Kopieer de regel `Failed to launch 'appie://login-exit?code=…'` uit de console (Firefox: kopieer het `appie://`-adres) en plak die hieronder. De code is maar een paar minuten geldig.",
+        "data": {
+          "redirect_url": "Doorstuur-URL of code"
+        },
+        "data_description": {
+          "redirect_url": "De hele regel of URL mag; alleen de code wordt gebruikt."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Opnieuw inloggen bij Albert Heijn",
+        "description": "De AH-login is verlopen.\n\n1. Open [de AH-inlogpagina]({login_url}) in een browser op de computer en open de ontwikkelaarstools (F12) op het tabblad **Console**.\n2. Log in. De laatste pagina laadt niet: die stuurt door naar de AH-app.\n3. Kopieer de regel `Failed to launch 'appie://login-exit?code=…'` uit de console (Firefox: kopieer het `appie://`-adres) en plak die hieronder.",
+        "data": {
+          "redirect_url": "Doorstuur-URL of code"
+        },
+        "data_description": {
+          "redirect_url": "De hele regel of URL mag; alleen de code wordt gebruikt."
+        }
+      }
+    },
+    "error": {
+      "invalid_code": "Geen inlogcode gevonden in wat je hebt geplakt.",
+      "invalid_auth": "AH heeft de code geweigerd. Codes verlopen na een paar minuten en werken maar één keer: log opnieuw in voor een nieuwe.",
+      "cannot_connect": "Albert Heijn is niet bereikbaar.",
+      "unknown": "Onverwachte fout."
+    },
+    "abort": {
+      "already_configured": "Dit AH-account is al ingesteld.",
+      "reauth_successful": "Opnieuw ingelogd.",
+      "wrong_account": "Je bent ingelogd met een ander AH-account dan het account dat is ingesteld."
+    }
+  },
+  "entity": {
+    "todo": {
+      "shopping_list": {
+        "name": "AH lijst"
+      }
+    }
+  }
+}
