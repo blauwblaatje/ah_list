@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import AhAuthError, AhClient, AhError, ListItem
@@ -34,6 +35,23 @@ class AhListCoordinator(DataUpdateCoordinator[list[ListItem]]):
             update_interval=UPDATE_INTERVAL,
         )
         self.client = client
+
+    async def async_patch(self, entries: list[dict[str, Any]]) -> None:
+        """Write to the AH list and show the list AH returns."""
+        try:
+            items = await self.client.async_patch(entries)
+        except AhAuthError as err:
+            self.config_entry.async_start_reauth(self.hass)
+            raise HomeAssistantError(
+                translation_domain=DOMAIN, translation_key="auth_failed"
+            ) from err
+        except AhError as err:
+            raise HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="write_failed",
+                translation_placeholders={"error": str(err)},
+            ) from err
+        self.async_set_updated_data(items)
 
     async def _async_update_data(self) -> list[ListItem]:
         try:

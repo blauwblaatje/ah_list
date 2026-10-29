@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
+from unittest.mock import patch
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.components.diagnostics import (
@@ -11,11 +13,12 @@ from pytest_homeassistant_custom_component.components.diagnostics import (
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 from pytest_homeassistant_custom_component.typing import ClientSessionGenerator
 
-from custom_components.ah_list.api import parse_code
+from custom_components.ah_list.api import AhClient, Tokens, parse_code
 from custom_components.ah_list.const import CONF_TOKENS, DOMAIN
 from homeassistant.components.todo import DOMAIN as TODO_DOMAIN
 from homeassistant.config_entries import SOURCE_REAUTH, ConfigEntryState
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .conftest import mock_list, mock_refresh
 
@@ -129,3 +132,28 @@ def test_parse_code() -> None:
     assert parse_code(f"  {code}\n") == code
     assert parse_code("https://login.ah.nl/") is None
     assert parse_code("") is None
+
+
+async def test_concurrent_requests_refresh_once(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    """Two requests with an expired token share one refresh."""
+    mock_list(aioclient_mock)
+    refreshes: list[str] = []
+
+    async def slow_refresh(session, path, body):
+        refreshes.append(body["refreshToken"])
+        await asyncio.sleep(0.01)  # let the other request reach the lock
+        return Tokens("new-access", "new-refresh", time.time() + 3600)
+
+    saved: list[Tokens] = []
+    client = AhClient(
+        async_get_clientsession(hass),
+        Tokens("old-access", "old-refresh", time.time()),
+        saved.append,
+    )
+    with patch("custom_components.ah_list.api._auth_post", slow_refresh):
+        await asyncio.gather(client.async_get_list(), client.async_get_list())
+
+    assert refreshes == ["old-refresh"]
+    assert [t.refresh_token for t in saved] == ["new-refresh"]

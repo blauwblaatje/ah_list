@@ -6,6 +6,7 @@ live API accepts.
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
 import re
@@ -126,6 +127,47 @@ class ListItem:
             product_id=int(product_id) if product_id is not None else None,
         )
 
+    def patch_entry(
+        self, quantity: int | None = None, checked: bool | None = None
+    ) -> dict[str, Any]:
+        """Return a PATCH entry for this item; quantity 0 removes it.
+
+        Uses the description as AH stored it, since AH rewrites free text.
+        """
+        quantity = self.quantity if quantity is None else quantity
+        checked = self.checked if checked is None else checked
+        if self.product_id is not None:
+            return product_entry(self.product_id, self.description, quantity, checked)
+        return text_entry(self.description, quantity, checked)
+
+
+def product_entry(
+    product_id: int, description: str, quantity: int = 1, checked: bool = False
+) -> dict[str, Any]:
+    """Return a PATCH entry for a product."""
+    return {
+        "productId": product_id,
+        "quantity": quantity,
+        "type": "SHOPPABLE",
+        "originCode": "PRD",
+        "description": description,
+        "searchTerm": description,
+        "strikeThrough": checked,
+    }
+
+
+def text_entry(
+    description: str, quantity: int = 1, checked: bool = False
+) -> dict[str, Any]:
+    """Return a PATCH entry for a free-text item; AH ignores its quantity."""
+    return {
+        "description": description,
+        "quantity": quantity,
+        "type": "SHOPPABLE",
+        "originCode": "TXT",
+        "strikeThrough": checked,
+    }
+
 
 async def _read_json(resp: aiohttp.ClientResponse) -> Any:
     try:
@@ -168,29 +210,35 @@ class AhClient:
         self._session = session
         self._tokens = tokens
         self._on_tokens = on_tokens
+        self._refresh_lock = asyncio.Lock()
 
-    async def _refresh(self) -> None:
-        self._tokens = await _auth_post(
-            self._session,
-            REFRESH_PATH,
-            {"clientId": CLIENT_ID, "refreshToken": self._tokens.refresh_token},
-        )
-        self._on_tokens(self._tokens)
+    async def _refresh(self, stale: Tokens) -> None:
+        """Refresh unless another request already replaced the stale tokens."""
+        async with self._refresh_lock:
+            if self._tokens is not stale:
+                return
+            self._tokens = await _auth_post(
+                self._session,
+                REFRESH_PATH,
+                {"clientId": CLIENT_ID, "refreshToken": stale.refresh_token},
+            )
+            self._on_tokens(self._tokens)
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> Any:
         if self._tokens.expires_at - EXPIRY_MARGIN < time.time():
-            await self._refresh()
+            await self._refresh(self._tokens)
         for attempt in range(2):
+            tokens = self._tokens
             headers = {
                 **_HEADERS,
-                "Authorization": f"Bearer {self._tokens.access_token}",
+                "Authorization": f"Bearer {tokens.access_token}",
             }
             try:
                 async with self._session.request(
                     method, BASE_URL + path, headers=headers, **kwargs
                 ) as resp:
                     if resp.status == 401 and attempt == 0:
-                        await self._refresh()
+                        await self._refresh(tokens)
                         continue
                     if resp.status in (401, 403):
                         raise AhAuthError(
@@ -218,4 +266,9 @@ class AhClient:
     async def async_get_list(self) -> list[ListItem]:
         """Return the items on the main shopping list."""
         payload = await self._request("GET", LIST_PATH)
+        return [ListItem.from_response(item) for item in payload.get("items") or []]
+
+    async def async_patch(self, entries: list[dict[str, Any]]) -> list[ListItem]:
+        """Add, change or remove items; return the list as it is afterwards."""
+        payload = await self._request("PATCH", LIST_PATH, json={"items": entries})
         return [ListItem.from_response(item) for item in payload.get("items") or []]

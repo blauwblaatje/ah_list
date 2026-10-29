@@ -40,5 +40,19 @@
         "name": "AH lijst"
       }
     }
+  },
+  "exceptions": {
+    "auth_failed": {
+      "message": "De AH-login is verlopen. Log opnieuw in via de reparatiemelding."
+    },
+    "write_failed": {
+      "message": "Kon de AH-lijst niet wijzigen: {error}"
+    },
+    "item_not_found": {
+      "message": "Item {uid} staat niet meer op de AH-lijst."
+    },
+    "product_rename": {
+      "message": "Een product op de AH-lijst kan geen andere naam krijgen; alleen het aantal (\"2 × …\") kan veranderen. Verwijder het en voeg een nieuw item toe."
+    }
   }
 }

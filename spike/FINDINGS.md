@@ -32,8 +32,14 @@
   `subCategory`, `orderAvailabilityStatus`, `availableOnline`, and **`isPreviouslyBought`**
   (matcher ranking signal straight from search; may make receipt scraping unnecessary).
 
+## Writes (probe, 2026-10-29, test items only)
+- PATCH sets the quantity of a product (1 then 3 gives 3, not 4).
+- Free-text items keep quantity 1 whatever is sent: AH ignores quantity on text.
+- `strikeThrough: true` checks an item off, `false` unchecks it; products and text alike.
+- The PATCH response is the whole list in the same shape as GET, so no GET is needed after
+  a write.
+
 ## Still to check
 - Whether the refresh token rotates (store whatever comes back, either way).
-- Check-off: does PATCH with `strikeThrough: true` work, and does quantity change in place
-  or add up?
 - Size of `size` that search accepts; the response of a bad/expired token (401?).
+- What happens when the app and a PATCH change the list at the same moment.

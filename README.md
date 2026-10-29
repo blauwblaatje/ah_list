@@ -1,7 +1,14 @@
 # Albert Heijn shopping list for Home Assistant
 
 Shows your Albert Heijn shopping list ("mijn lijst" in the AH app) as a Home Assistant
-to-do list, **AH lijst** (`todo.ah_lijst`).
+to-do list, **AH lijst** (`todo.ah_lijst`), and lets you change it from Home Assistant:
+
+- **Add** an item: it goes to AH as free text for now.
+- **Check off** and uncheck items.
+- **Change the quantity** of a product by editing the number in front: `2 × AH Halfvolle melk`.
+  AH keeps free-text items at quantity 1.
+- **Rename** a free-text item. Products can't be renamed; remove them and add a new item.
+- **Remove** items.
 
 Planned: adding items from other to-do lists (the HA shopping list, Mealie, Assist) with
 matching to AH products. See [the plan](#roadmap).
@@ -42,7 +49,7 @@ The login stays valid; when AH revokes it, Home Assistant asks you to log in aga
 ## Roadmap
 
 1. ✅ Read-only AH list
-2. Add, remove and check off items on the AH list
+2. ✅ Add, remove and check off items on the AH list
 3. Match free text ("2 pakken melk") to AH products, preferring products you bought before
 4. `ah_list.sync_from_todo` action and an inbox blueprint
 5. A list of matches to review, "AH te controleren"

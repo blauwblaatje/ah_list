@@ -40,5 +40,19 @@
         "name": "AH lijst"
       }
     }
+  },
+  "exceptions": {
+    "auth_failed": {
+      "message": "The AH login has expired. Log in again via the repair notification."
+    },
+    "write_failed": {
+      "message": "Could not change the AH list: {error}"
+    },
+    "item_not_found": {
+      "message": "Item {uid} is no longer on the AH list."
+    },
+    "product_rename": {
+      "message": "A product on the AH list can't be renamed; only its quantity (\"2 × …\") can change. Remove it and add a new item instead."
+    }
   }
 }
