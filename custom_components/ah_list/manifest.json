@@ -1,7 +1,13 @@
 {
   "domain": "ah_list",
   "name": "Albert Heijn shopping list",
-  "codeowners": ["@blauwblaatje"],
+  "categories": [
+    "productivity_information.shopping_groceries",
+    "productivity_information.calendars_todos"
+  ],
+  "codeowners": [
+    "@blauwblaatje"
+  ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/blauwblaatje/ah_list",
