@@ -44,7 +44,7 @@ matching to AH products. See [the plan](#roadmap).
 
 ## Installation
 
-Via HACS: add this repository as a custom repository (type *Integration*), install
+Via HACS: add `https://github.com/blauwblaatje/ah_list` as a custom repository (type *Integration*), install
 **Albert Heijn shopping list** and restart Home Assistant.
 
 Manually: copy `custom_components/ah_list` into your `config/custom_components/`.
